@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getAllPublicRoutines, createRoutine, updateRoutine, getRoutineById, destroyRoutine, addActivityToRoutine, getRoutineActivitiesByRoutine } = require('../db');
+const { getAllPublicRoutines, createRoutine, updateRoutine, getRoutineById, destroyRoutine, addActivityToRoutine, getRoutineActivitiesByRoutine, getAllRoutinesByUser, getActivitiesByRoutineId } = require('../db');
 const { requireUser, requiredNotSent } = require('./utils')
+
 
 
 
@@ -10,6 +11,7 @@ router.get('/', async (req, res, next) => {
   try {
     // TODO - send back all data, including private, if token present. This would mean adding only the data for the user that matches the request
     const routines = await getAllPublicRoutines();
+    console.log(req.headers);
     res.send(routines);
   } catch (error) {
     next(error)
@@ -18,9 +20,13 @@ router.get('/', async (req, res, next) => {
 
 // POST /api/routines
 router.post('/', requireUser, requiredNotSent({requiredParams: ['name', 'goal']}), async (req, res, next) => {
+  console.log("USERRR" + req.user.id);
   try {
+    console.log(" WE HAVE THE ID HERE: " + req.user.id);
+    const reqsId = req.user.id
     const {name, goal} = req.body;
-    const createdRoutine = await createRoutine({creatorId: req.user.id, name, goal, isPublic: req.body.isPublic});
+    const createdRoutine = await createRoutine({creatorId: reqsId, name:req.body.name, goal:req.body.goal, isPublic: req.body.isPublic});
+    console.log("IDDD" + req.user.id);
     if(createdRoutine) {
       res.send(createdRoutine);
     } else {
